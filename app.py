@@ -15,24 +15,44 @@ started = False
 s = Session("testa")
 
 def start():
-    global started, s
-    started = True
+    global s
     stop_btn.configure(state=NORMAL)
+    pause_btn.configure(state=NORMAL)
     start_btn.configure(state=DISABLED)
     s.start()
     
+def pause():
+    global s
+    stop_btn.configure(state=NORMAL)
+    pause_btn.configure(state=NORMAL)
+    start_btn.configure(state=DISABLED)
+    s.start()
+    
+def resume():
+    global s
+    pause_btn.configure(text="Pause", command=pause)
+    s.resume()
+    
+def pause():
+    global s
+    pause_btn.configure(text="Resume", command=resume)
+    s.pause()
+    
 def stop():
-    global started, s
-    started = False
+    global s
     stop_btn.configure(state=DISABLED)
+    pause_btn.configure(state=DISABLED)
     start_btn.configure(state=NORMAL)
     s.stop()
 
-# Start/Stop buttons.
+# Buttons.
 start_btn = ttk.Button(btn_frame, text="Start", command=start, state=NORMAL)
 start_btn.grid(row=0,column=0, sticky=E,padx=3,pady=3)
 
+pause_btn = ttk.Button(btn_frame, text="Pause", command=pause, state=DISABLED)
+pause_btn.grid(row=0,column=1, sticky=NS,padx=3,pady=3)
+
 stop_btn = ttk.Button(btn_frame, text="Stop", command=stop, state=DISABLED)
-stop_btn.grid(row=0,column=1,sticky=W,padx=3,pady=3)\
+stop_btn.grid(row=0,column=2,sticky=W,padx=3,pady=3)
 
 root.mainloop()
