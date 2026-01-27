@@ -1,58 +1,71 @@
 from tkinter import *
 from tkinter import ttk
 from session import Session
+import json
+import os
 
 # Initialize root.
 root = Tk()
 root.title("Simple Input Logger.")
-root.geometry("250x75")
+root.geometry("250x32")
+root.resizable(False, False)
 
-# Button container.
-btn_frame = ttk.Frame(root)
-btn_frame.pack()
+def get_data_filepath():
+    PATH = "./data.json"
+    if not os.path.isfile(PATH):
+        with open(PATH, "w") as f:
+            placeholder = {
+                "sessions": []
+            }
+            json.dump(placeholder, f, indent=2)
+    return PATH
 
-started = False
-s = Session("testa")
+
+f = open(get_data_filepath(), "r")
+data = json.load(f)
+session = Session("unnamed")
 
 def start():
-    global s
+    global session
     stop_btn.configure(state=NORMAL)
     pause_btn.configure(state=NORMAL)
     start_btn.configure(state=DISABLED)
-    s.start()
-    
-def pause():
-    global s
-    stop_btn.configure(state=NORMAL)
-    pause_btn.configure(state=NORMAL)
-    start_btn.configure(state=DISABLED)
-    s.start()
+    session.start()
     
 def resume():
-    global s
+    global session
     pause_btn.configure(text="Pause", command=pause)
-    s.resume()
+    session.resume()
     
 def pause():
-    global s
+    global session
     pause_btn.configure(text="Resume", command=resume)
-    s.pause()
+    session.pause()
     
 def stop():
-    global s
+    global session
     stop_btn.configure(state=DISABLED)
     pause_btn.configure(state=DISABLED)
     start_btn.configure(state=NORMAL)
-    s.stop()
+    resume()
+    session.stop()
+
+# Button frame.
+btn_frame = ttk.Frame(root)
+btn_frame.pack(fill="both", expand=True)
 
 # Buttons.
 start_btn = ttk.Button(btn_frame, text="Start", command=start, state=NORMAL)
-start_btn.grid(row=0,column=0, sticky=E,padx=3,pady=3)
+start_btn.grid(row=0, column=0, sticky=E)
 
 pause_btn = ttk.Button(btn_frame, text="Pause", command=pause, state=DISABLED)
-pause_btn.grid(row=0,column=1, sticky=NS,padx=3,pady=3)
+pause_btn.grid(row=0, column=1, sticky=NS)
 
 stop_btn = ttk.Button(btn_frame, text="Stop", command=stop, state=DISABLED)
-stop_btn.grid(row=0,column=2,sticky=W,padx=3,pady=3)
+stop_btn.grid(row=0, column=2, sticky=W)
+
+# Distribute weights.
+for c in range(3):
+    btn_frame.columnconfigure(c, weight=1)
 
 root.mainloop()
