@@ -1,14 +1,9 @@
 from pynput.keyboard import KeyCode
 from pynput import mouse, keyboard
 from pynput.mouse import Button
-import datetime
+import json, os, datetime, copy
 
-# Use Session.__dict__ to serialize into json.
-# TO DO:
-#  - Add session creator/naming menu.
-#  - Should use JSON, not SQLite. Dont. overcomplicate things.
-#  - It should display existing session names.
-#  - Prompt user to name new session.
+# TODO: Dump data to json file on stop button press.
 
 class Session:
     name: str
@@ -20,7 +15,7 @@ class Session:
     
     def __init__(self, name:str):
         self.name: str = name
-        self.created_at: str = datetime.datetime.now().timestamp()
+        self.created_at: float = datetime.datetime.now().timestamp()
         
         # Begin/end times.
         self.started_at = None
@@ -40,14 +35,56 @@ class Session:
         self._mouse_listener = None
         self._keyboard_listener = None
         
+        # File stream.
+        self.file = open(self.get_data_filepath(), "r+")
+        self.data_snapshot = json.load(self.file)
+        
+    def dump_data(self):
+        data = copy.deepcopy(self.data_snapshot)
+        data["sessions"].append(dict(self))
+        self.file.truncate(0)
+        json.dump(data, self.file, indent=2)
+    
+    def __iter__(self):
+        return iter({
+            "name": self.name,
+            "created_at": self.created_at,
+            "started_at": self.started_at,
+            "ended_at": self.ended_at,
+            "mouse_timestamps": self.mouse_timestamps,
+            "keyboard_timestamps": self.keyboard_timestamps
+        }.items())
+    
+    def get_data_filepath(self):
+        PATH = "./data.json"
+        if not os.path.isfile(PATH):
+            with open(PATH, "w") as f:
+                placeholder = {
+                    "sessions": []
+                }
+                json.dump(placeholder, f, indent=2)
+        return PATH
+    
+    def seconds_to_duration(self, total_seconds: float):
+        whole_seconds = int(total_seconds)
+        minutes = int(whole_seconds // 60)
+        seconds = int(whole_seconds % 60)
+        milliseconds =  int(round(total_seconds - whole_seconds, 2) * 1000)
+        x = lambda x : str(x).rjust(2, "0")[:2]
+        return f"{x(minutes)}:{x(seconds)}.{x(milliseconds)}"
+    
+    def get_duration_timestamp(self):
+        return self.seconds_to_duration(self.elapsed)    
+        
     def stop(self):
         self._is_paused = True
         self._mouse_listener.stop()
         self._keyboard_listener.stop()
         self._mouse_listener = None
         self._keyboard_listener = None
-        self.concluded = datetime.datetime.now().timestamp()
-        print(self.mouse_timestamps)
+        self.ended_at = datetime.datetime.now().timestamp()
+        self.dump_data()
+        self.file.close()
         
     def start(self):
         self._is_paused = False
@@ -84,8 +121,8 @@ class Session:
         print("Clicked the mouse.")
         
         # Record mouse clicks.
-        self.mouse_timestamps.append(datetime.datetime.now().timestamp() - self.started_at)
-        # print(self.mouse_timestamps)
+        self.mouse_timestamps.append(self.get_duration_timestamp())
+        self.dump_data()
 
     def on_keyboard_press(self, key: KeyCode):
         if self._is_paused:
@@ -94,5 +131,5 @@ class Session:
         print("Pressed a key.")
 
         # Record keyboard presses.
-        self.keyboard_timestamps.append(datetime.datetime.now().timestamp() - self.started_at)
-        
+        self.keyboard_timestamps.append(self.get_duration_timestamp())
+        self.dump_data()
