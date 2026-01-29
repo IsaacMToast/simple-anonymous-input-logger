@@ -10,19 +10,7 @@ root.title("Simple Input Logger.")
 root.geometry("250x32")
 root.resizable(False, False)
 
-def get_data_filepath():
-    PATH = "./data.json"
-    if not os.path.isfile(PATH):
-        with open(PATH, "w") as f:
-            placeholder = {
-                "sessions": []
-            }
-            json.dump(placeholder, f, indent=2)
-    return PATH
-
-
-f = open(get_data_filepath(), "r")
-data = json.load(f)
+# Create new session.
 session = Session("unnamed")
 
 def start():
