@@ -1,0 +1,3 @@
+- Create a session to log clicks and key presses.
+- Data is outputted in `./data.json`.
+- **This is not a keylogger.** Keypresses are recorded as timestamps with no identifiying information.
