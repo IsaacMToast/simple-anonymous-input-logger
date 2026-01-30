@@ -1,8 +1,6 @@
 from tkinter import *
 from tkinter import ttk
 from session import Session
-import json
-import os
 
 # Initialize root.
 root = Tk()
