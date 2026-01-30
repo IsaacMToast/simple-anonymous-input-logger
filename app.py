@@ -8,6 +8,8 @@ root.title("Simple Input Logger.")
 root.geometry("250x32")
 root.resizable(False, False)
 
+# TODO: Open file on start, close on stop.
+
 # Create new session.
 session = Session("unnamed")
 
