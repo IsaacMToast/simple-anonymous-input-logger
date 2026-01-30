@@ -3,8 +3,6 @@ from pynput import mouse, keyboard
 from pynput.mouse import Button
 import json, os, datetime, copy
 
-# TODO: Dump data to json file on stop button press.
-
 class Session:
     name: str
     created_at: float
@@ -43,14 +41,15 @@ class Session:
         data = copy.deepcopy(self.data_snapshot)
         data["sessions"].append(dict(self))
         self.file.truncate(0)
+        self.file.seek(0)
         json.dump(data, self.file, indent=2)
     
     def __iter__(self):
         return iter({
             "name": self.name,
-            "created_at": self.created_at,
-            "started_at": self.started_at,
-            "ended_at": self.ended_at,
+            "created_at": datetime.datetime.fromtimestamp(self.created_at).isoformat(),
+            "started_at": datetime.datetime.fromtimestamp(self.started_at).isoformat(),
+            "ended_at": None if not self.ended_at else datetime.datetime.fromtimestamp(self.ended_at).isoformat(),
             "mouse_timestamps": self.mouse_timestamps,
             "keyboard_timestamps": self.keyboard_timestamps
         }.items())
@@ -69,9 +68,8 @@ class Session:
         whole_seconds = int(total_seconds)
         minutes = int(whole_seconds // 60)
         seconds = int(whole_seconds % 60)
-        milliseconds =  int(round(total_seconds - whole_seconds, 2) * 1000)
-        x = lambda x : str(x).rjust(2, "0")[:2]
-        return f"{x(minutes)}:{x(seconds)}.{x(milliseconds)}"
+        milliseconds =  int((total_seconds - whole_seconds) * 1000)
+        return f"{minutes:02d}:{seconds:02d}.{milliseconds:03d}".replace(" ", "0")
     
     def get_duration_timestamp(self):
         return self.seconds_to_duration(self.elapsed)    
@@ -84,7 +82,6 @@ class Session:
         self._keyboard_listener = None
         self.ended_at = datetime.datetime.now().timestamp()
         self.dump_data()
-        self.file.close()
         
     def start(self):
         self._is_paused = False
