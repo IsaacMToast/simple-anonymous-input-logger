@@ -1,11 +1,10 @@
+from pathlib import Path
 from pynput.keyboard import KeyCode
 from pynput import mouse, keyboard
 from pynput.mouse import Button
 import json, os, datetime, copy
 
-# TODO: 
-#  - Remove temp file replacement thing for file dumping. 
-#  - Can only use the same file to read/write.
+DATA_PATH = Path(__file__).with_name("data.json")
 
 class Session:
     name: str
@@ -37,19 +36,23 @@ class Session:
         self._mouse_listener = None
         self._keyboard_listener = None
         
-        # File stream.
-        self.file = open(self.get_data_filepath(), "r+")
-        self.data_snapshot = json.load(self.file)
+        # Get snapshot of data.
+        self.ensure_data_filepath()
+        self.data_snapshot = self.get_data_snapshot()
+        
+    def get_data_snapshot(self):
+        with open(DATA_PATH, "r") as f:
+            data = json.load(f)
+        return data 
         
     def dump_data(self):
         data = copy.deepcopy(self.data_snapshot)
         data["sessions"].append(dict(self))
-        with open(self.get_data_filepath(), "w", encoding="utf-8") as f:
+        with open(DATA_PATH, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
             f.flush()
             os.fsync(f.fileno())
 
-    
     def __iter__(self):
         return iter({
             "name": self.name,
@@ -60,15 +63,13 @@ class Session:
             "keyboard_timestamps": self.keyboard_timestamps
         }.items())
     
-    def get_data_filepath(self):
-        PATH = "./data.json"
-        if not os.path.isfile(PATH):
-            with open(PATH, "w") as f:
+    def ensure_data_filepath(self):
+        if not os.path.isfile(DATA_PATH):
+            with open(DATA_PATH, "w") as f:
                 placeholder = {
                     "sessions": []
                 }
                 json.dump(placeholder, f, indent=2)
-        return PATH
     
     def seconds_to_duration(self, total_seconds: float):
         whole_seconds = int(total_seconds)

@@ -8,13 +8,11 @@ root.title("Simple Input Logger.")
 root.geometry("250x32")
 root.resizable(False, False)
 
-# TODO: Open file on start, close on stop.
-
-# Create new session.
-session = Session("unnamed")
+session = None
 
 def start():
     global session
+    session = Session("unnamed")
     stop_btn.configure(state=NORMAL)
     pause_btn.configure(state=NORMAL)
     start_btn.configure(state=DISABLED)
@@ -35,7 +33,7 @@ def stop():
     stop_btn.configure(state=DISABLED)
     pause_btn.configure(state=DISABLED)
     start_btn.configure(state=NORMAL)
-    resume()
+    pause_btn.configure(text="Pause", command=pause)
     session.stop()
 
 # Button frame.
