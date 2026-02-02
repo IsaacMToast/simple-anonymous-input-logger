@@ -3,6 +3,10 @@ from pynput import mouse, keyboard
 from pynput.mouse import Button
 import json, os, datetime, copy
 
+# TODO: 
+#  - Remove temp file replacement thing for file dumping. 
+#  - Can only use the same file to read/write.
+
 class Session:
     name: str
     created_at: float

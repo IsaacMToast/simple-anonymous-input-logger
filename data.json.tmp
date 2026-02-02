@@ -1,0 +1,16 @@
+{
+  "sessions": [
+    {
+      "name": "unnamed",
+      "created_at": "2026-02-02T10:33:36.367891",
+      "started_at": "2026-02-02T10:33:37.515344",
+      "ended_at": null,
+      "mouse_timestamps": [
+        "00:00.443"
+      ],
+      "keyboard_timestamps": [
+        "00:00.790"
+      ]
+    }
+  ]
+}
