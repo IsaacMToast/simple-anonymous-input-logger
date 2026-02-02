@@ -44,14 +44,10 @@ class Session:
     def dump_data(self):
         data = copy.deepcopy(self.data_snapshot)
         data["sessions"].append(dict(self))
-
-        tmp = self.get_data_filepath() + ".tmp"
-        with open(tmp, "w", encoding="utf-8") as f:
+        with open(self.get_data_filepath(), "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
             f.flush()
             os.fsync(f.fileno())
-
-        os.replace(tmp, self.get_data_filepath())  # atomic on most OSes
 
     
     def __iter__(self):
